@@ -1,0 +1,2260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- Ajouts iPhone : écran d'accueil / plein écran -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DVX Card">
+    <meta name="theme-color" content="#08080b">
+    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACu0lEQVR4Xu3dMU4bURSF4ecohSNqVkKblSGlipSVpWUlLIA2BRJCgQmcaO59fp7vqwljPx/9A0kwp/P5ZsB7vjgWthgHxkFOOVAOcsqBcpBTDpSDnHKgHOSUA+UgpxwoBznlQDnIKQfKQU45UA5yyoFykFMOlIOccqAc5JQD5SCnHCgHOeVAOcgpB8pBTjlQDnLKgXKQ+5r/kR3c3T/u8FkO5uHXbfMzPnW+Sa1N7KJtJX1fc1jGXtpOsqMcbU/maKoTUl4Oy6hTfba146h+9JSecO04WFrhOEpHzYu6c64aR90j5q2i064aB1fAONhUMo6iyvEPFWdeMg6ug3HQe1vhOigHykFOOVAOcsqBcpBTDjZ1/DdBFqUc+JqDnHKgHOSUA+UgpxwoBznlQDnIKQfKQU45UA5yJW8YV/HTV3xo9zf6cVvBbYWccqAc5JQD5SCnHCgHOeVAOcgpB8pBTjlQDnLKgXKQUw6Ug5xyoBzklAPlIKccKAc55UA5yCkHykGu5AepP+n3j2+f/MhdfP/5tMvnOY5pt5XmZYwx4YqrmzOO/mU8m3XdRU0Yx9xXaO7V1zJhHKzCOPCtLDnlQDnIKQeXVI65f1M59+prmVOOWa/QrOsuas44xpjwOllGauY/vHm1Lty0cnD5jINL+m6FVSgHykFOOVAOcsqBcpBTDnrLsftvouNDFWeuHPSWg+tQVY6KyrGl6LSrxjFG1SPmL0XLGKNyHKyusBzi0aAuGx3lKH30B1d9tqfz+abniO/uH3sudATVs3hWe1t5ref5HEHbSfaV4zUV+Q9tm3gxZxwsoe+2wnKMg03GgXGQUw6Ug5xyoBzklAPlIKccKAc55UA5yCkHykFOOVAOcsqBcpBTDpSDnHKgHOSUA+UgpxwoBznlQDnIKQfKQU45UA5yyoFykFMOlIPcHxD2Tt0eLnLHAAAAAElFTkSuQmCC">
+
+    <title>DVXPLUG - CARD | Générateur de Carte Pro</title>
+
+    <!-- Typographies Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Dépendances CDN nécessaires -->
+    <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+
+    <style>
+        :root {
+            --bg-deep:     #08080b;
+            --panel-dark:  #0e0e12;
+            --border:      rgba(255, 255, 255, 0.07);
+            --accent:      #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.18);
+            --success:     #10b981;
+            --danger:      #ef4444;
+            --warning:     #f59e0b;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            font-family: 'Inter', sans-serif;
+            color: #e2e8f0;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        button, input { font-family: inherit; }
+
+        .sr-only {
+            position: absolute;
+            width: 1px; height: 1px;
+            padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0);
+            white-space: nowrap; border: 0;
+        }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 10px; }
+
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        @media (min-width: 1024px) {
+            .app-shell { flex-direction: row; }
+        }
+
+        .sidebar {
+            width: 100%;
+            background: var(--panel-dark);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+            flex-shrink: 0;
+        }
+        @media (min-width: 1024px) {
+            .sidebar {
+                width: 440px;
+                height: 100vh;
+                position: sticky;
+                top: 0;
+            }
+        }
+
+        .sidebar-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.06) 0%, transparent 60%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+        .logo-icon {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            flex-shrink: 0;
+        }
+        .sidebar-header h1 {
+            font-size: 17px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+        }
+        .version-badge {
+            font-size: 9px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            margin-top: 2px;
+        }
+
+        .tabs-bar {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            padding: 0 6px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 4px;
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #475569;
+            border: none;
+            background: transparent;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { color: #94a3b8; }
+        .tab-btn[aria-selected="true"] {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        .badge-count {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border-radius: 999px;
+            padding: 1px 6px;
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .sidebar-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px 20px 10px;
+        }
+
+        .field-section { margin-bottom: 18px; }
+        .section-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .section-label-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .field-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-dark {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            padding: 10px 13px;
+            border-radius: 10px;
+            font-size: 13px;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+        }
+        .input-dark:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            outline: none;
+        }
+        .input-dark::placeholder { color: #334155; }
+        .input-dark:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .input-row { display: flex; gap: 10px; }
+        .input-row .field-group { flex: 1; min-width: 0; }
+
+        .toggle-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+        .toggle-input { display: none; }
+        .toggle-track {
+            width: 34px;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 999px;
+            position: relative;
+            transition: background 0.2s;
+        }
+        .toggle-thumb {
+            width: 14px;
+            height: 14px;
+            background: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+        .toggle-input:checked + .toggle-track { background: var(--accent); }
+        .toggle-input:checked + .toggle-track .toggle-thumb { transform: translateX(16px); }
+
+        .range-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            margin-top: 6px;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+        }
+
+        .themes-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 7px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 3px;
+        }
+        .theme-btn {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 9px 4px 7px;
+            border-radius: 11px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 8.5px;
+            font-weight: 700;
+            color: #64748b;
+            text-align: center;
+            line-height: 1.15;
+            min-height: 66px;
+        }
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
+        }
+        .theme-btn.active {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            color: #ffffff;
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+        .theme-btn .check-mark {
+            position: absolute;
+            top: 4px; right: 4px;
+            width: 13px; height: 13px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .theme-btn.active .check-mark { display: flex; }
+
+        .color-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .color-preview {
+            width: 42px; height: 42px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            cursor: pointer;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .color-preview input[type="color"] {
+            position: absolute;
+            inset: -8px;
+            width: calc(100% + 16px);
+            height: calc(100% + 16px);
+            cursor: pointer;
+            border: none;
+            opacity: 0;
+        }
+        .color-swatch {
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .drop-zone {
+            width: 100%;
+            padding: 16px 12px;
+            border: 1.5px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 11px;
+            color: #475569;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-glow);
+        }
+        .drop-zone.has-file {
+            border-color: var(--success);
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.06);
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 290px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+        .history-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .history-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+        }
+        .history-platform {
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 2px 7px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.07);
+            color: #ffffff;
+        }
+        .history-date {
+            color: #64748b;
+            font-size: 9.5px;
+        }
+        .history-creds {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #e2e8f0;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 6px 8px;
+            border-radius: 7px;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            overflow: hidden;
+        }
+        .history-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10.5px;
+            color: #94a3b8;
+        }
+        .history-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .btn-mini {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-mini:hover { background: rgba(255, 255, 255, 0.14); color: #ffffff; }
+        .btn-mini.danger:hover { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #fca5a5; }
+
+        /* NOUVELLE ACTION BAR AVEC CHOIX D'EXPORT */
+        .action-bar {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .action-row {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+        .btn-primary {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(22, 163, 74, 0.2);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #15803d, #166534);
+            transform: translateY(-1px);
+        }
+        .btn-primary.blue {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+        }
+        .btn-primary.blue:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.09);
+            color: #e2e8f0;
+        }
+        .btn-accent {
+            padding: 10px 14px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background 0.2s;
+            box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3);
+        }
+        .btn-accent:hover { background: #1e40af; }
+
+        .info-box {
+            padding: 10px 13px;
+            border-radius: 10px;
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.12);
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 16px 0;
+        }
+        .input-combo {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px; right: 20px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .toast {
+            min-width: 240px;
+            max-width: 320px;
+            padding: 11px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(12, 12, 16, 0.96);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: toast-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+        }
+        .toast.success { border-left: 3px solid var(--success); }
+        .toast.error   { border-left: 3px solid var(--danger); }
+        .toast.info    { border-left: 3px solid var(--accent); }
+        .toast.warning { border-left: 3px solid var(--warning); }
+        .toast.out     { animation: toast-out 0.2s forwards; }
+        @keyframes toast-in  { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toast-out { to   { opacity: 0; transform: translateX(16px); } }
+
+        .preview-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+            background: #050507;
+            position: relative;
+            min-height: 400px;
+            overflow: hidden;
+        }
+        .preview-grid {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image: radial-gradient(rgba(30, 41, 59, 0.5) 1px, transparent 1px);
+            background-size: 36px 36px;
+            opacity: 0.4;
+        }
+        .preview-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.08), transparent 70%);
+            pointer-events: none;
+        }
+        .preview-badge {
+            position: relative;
+            z-index: 10;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+        }
+        .pulse-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse-ring 2s infinite;
+        }
+        @keyframes pulse-ring {
+            0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70%  { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .preview-badge span {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #94a3b8;
+        }
+        .preview-card-wrap {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 680px;
+            aspect-ratio: 16 / 10;
+        }
+        #preview-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 14px;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+            display: block;
+        }
+        .preview-hint {
+            position: relative;
+            z-index: 10;
+            margin-top: 20px;
+            font-size: 10px;
+            color: #334155;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 5, 7, 0.55);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-radius: 14px;
+            z-index: 5;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .spinner {
+            width: 22px; height: 22px;
+            border: 2.5px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+<div class="app-shell">
+
+    <!-- ═══════════ SIDEBAR ═══════════ -->
+    <aside class="sidebar">
+
+        <header class="sidebar-header">
+            <div class="brand-wrap">
+                <div class="logo-icon">
+                    <i class="ph-bold ph-qr-code" style="color:white;font-size:18px;"></i>
+                </div>
+                <div>
+                    <h1>DVXPLUG - CARD</h1>
+                    <div class="version-badge">Générateur de Carte Pro · v6.5</div>
+                </div>
+            </div>
+            <button type="button" id="btn-download-app" class="btn-mini" title="Télécharger le fichier HTML">
+                <i class="ph-bold ph-download-simple"></i> HTML
+            </button>
+        </header>
+
+        <div class="tabs-bar" role="tablist">
+            <button class="tab-btn" id="tab-btn-design" data-tab="design" role="tab" aria-selected="true">
+                <i class="ph ph-palette"></i> Design
+            </button>
+            <button class="tab-btn" id="tab-btn-access" data-tab="access" role="tab" aria-selected="false">
+                <i class="ph ph-shield-check"></i> Accès
+            </button>
+            <button class="tab-btn" id="tab-btn-qr" data-tab="qr" role="tab" aria-selected="false">
+                <i class="ph ph-qr-code"></i> QR Code
+            </button>
+            <button class="tab-btn" id="tab-btn-history" data-tab="history" role="tab" aria-selected="false">
+                <i class="ph ph-clock-counter-clockwise"></i> Mémoire <span id="history-count" class="badge-count">0</span>
+            </button>
+        </div>
+
+        <div class="sidebar-body">
+
+            <!-- ── TAB 1: DESIGN ── -->
+            <div class="tab-panel active" id="tab-design" role="tabpanel">
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-squares-four"></i> Plateforme (21 Services Officiels)</span>
+                    </div>
+                    <div class="themes-grid" id="themes-grid"></div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-drop-half"></i> Couleur d'accent</span>
+                    </div>
+                    <div class="color-wrap">
+                        <div class="color-preview">
+                            <div class="color-swatch" id="color-swatch"></div>
+                            <input type="color" id="input-color" value="#E50914">
+                        </div>
+                        <div style="flex:1;">
+                            <div class="field-label">Cliquer pour changer ou saisir le code</div>
+                            <input type="text" id="input-color-hex" value="#E50914" maxlength="7"
+                                   class="input-dark" style="padding:7px 12px;font-family:'JetBrains Mono',monospace;font-weight:700;text-transform:uppercase;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-calendar-blank"></i> Validité & Profil</span>
+                    </div>
+                    <div class="input-row" style="margin-bottom:12px;">
+                        <div class="field-group">
+                            <label class="field-label" for="input-date">Date d'expiration</label>
+                            <input type="text" id="input-date" value="12 Mai 2026"
+                                   placeholder="ex: 30 Juin 2026" maxlength="30" class="input-dark">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label" for="input-validity">Durée</label>
+                            <input type="text" id="input-validity" value="1 mois"
+                                   placeholder="ex: 3 mois" maxlength="20" class="input-dark">
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label" style="margin-bottom:6px;">
+                            <label for="input-profile">Mention PROFIL (3ᵉ colonne)</label>
+                            <label class="toggle-wrap" title="Afficher ou masquer la colonne PROFIL sur la carte">
+                                <input type="checkbox" id="input-show-profile" class="toggle-input" checked>
+                                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                                <span id="profile-toggle-text">Affiché</span>
+                            </label>
+                        </div>
+                        <input type="text" id="input-profile" value="Profil 1"
+                               placeholder="Entrez le nom du profil (ex: Profil 2, PIN 1234…)" maxlength="22" class="input-dark">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ── TAB 2: ACCÈS ── -->
+            <div class="tab-panel" id="tab-access" role="tabpanel">
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-tag"></i> En-tête supérieur</span>
+                    </div>
+                    <label class="field-label" for="input-badge-title">Texte au-dessus du logo (ex: SECURE PROTOCOL)</label>
+                    <input type="text" id="input-badge-title" value="SECURE PROTOCOL"
+                           placeholder="ex: SECURE PROTOCOL" maxlength="30" class="input-dark">
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-user"></i> Identifiants de la carte</span>
+                    </div>
+                    <label class="field-label" for="input-email">Email ou nom d'utilisateur</label>
+                    <input type="text" id="input-email" value="user@dvxplug.io"
+                           placeholder="email@exemple.com" maxlength="60"
+                           class="input-dark" style="font-family:'JetBrains Mono',monospace;">
+                </div>
+
+                <div class="field-section">
+                    <div class="field-label">
+                        <label for="input-password">Code d'accès</label>
+                        <button type="button" id="btn-random-pass" style="background:none;border:none;color:var(--accent);font-size:10px;font-weight:700;cursor:pointer;">
+                            <i class="ph ph-arrows-clockwise"></i> Générer
+                        </button>
+                    </div>
+                    <input type="text" id="input-password" value="DVX-2026-XQ"
+                           placeholder="ex: XXXX-XXXX-XXXX" maxlength="40"
+                           class="input-dark" style="font-family:'JetBrains Mono',monospace;">
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-address-book"></i> Attribution (Mémoire)</span>
+                    </div>
+                    <label class="field-label" for="input-recipient">À qui est attribué cet accès ? (Non affiché sur la carte)</label>
+                    <input type="text" id="input-recipient" value="Client"
+                           placeholder="ex: Marc / +237 6..." maxlength="40" class="input-dark">
+                </div>
+
+                <button type="button" id="btn-save-access" class="btn-accent" style="width:100%;padding:11px;">
+                    <i class="ph-bold ph-floppy-disk"></i> Enregistrer dans l'Historique
+                </button>
+
+            </div>
+
+            <!-- ── TAB 3: QR CODE ── -->
+            <div class="tab-panel" id="tab-qr" role="tabpanel">
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-link"></i> Générer depuis un lien</span>
+                    </div>
+                    <label class="field-label" for="input-qr-text">URL ou texte à encoder</label>
+                    <div class="input-combo">
+                        <input type="text" id="input-qr-text" value="https://dvxplug.io"
+                               placeholder="https://…" maxlength="500" class="input-dark">
+                        <button type="button" id="btn-generate-qr" class="btn-accent">
+                            GÉNÉRER
+                        </button>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-palette"></i> Couleur & Dilution du QR Code</span>
+                        <button type="button" id="btn-sync-qr-color" style="background:none;border:none;color:var(--accent);font-size:9.5px;font-weight:700;cursor:pointer;">
+                            Réinitialiser sur le thème
+                        </button>
+                    </div>
+
+                    <div class="color-wrap" style="margin-bottom:12px;">
+                        <div class="color-preview">
+                            <div class="color-swatch" id="qr-color-swatch"></div>
+                            <input type="color" id="input-qr-color" value="#E50914">
+                        </div>
+                        <div style="flex:1;">
+                            <label class="field-label" for="input-qr-color-hex">Couleur libre du QR Code</label>
+                            <input type="text" id="input-qr-color-hex" value="#E50914" maxlength="7"
+                                   class="input-dark" style="padding:7px 12px;font-family:'JetBrains Mono',monospace;font-weight:700;text-transform:uppercase;">
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="field-label">
+                            <label for="input-qr-dilution">Dilution / Intensité (100% = couleur d'origine)</label>
+                            <span id="qr-dilution-label" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#60a5fa;">100%</span>
+                        </div>
+                        <input type="range" id="input-qr-dilution" min="25" max="100" value="100" class="range-slider">
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-upload-simple"></i> Importer une image QR</span>
+                    </div>
+                    <input type="file" id="input-qr-file" accept="image/*" class="sr-only">
+                    <div id="qr-drop-zone" class="drop-zone" role="button" tabindex="0">
+                        <i class="ph ph-image-square" style="font-size:24px;"></i>
+                        <span id="qr-drop-label">Cliquer pour importer (JPG, PNG, SVG)</span>
+                        <span style="font-size:9px;opacity:0.6;">Max 5 Mo</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ── TAB 4: MÉMOIRE-PDF & HISTORIQUE ── -->
+            <div class="tab-panel" id="tab-history" role="tabpanel">
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-file-pdf"></i> Sauvegarde & Restauration PDF</span>
+                    </div>
+                    <div class="input-row" style="margin-bottom:8px;">
+                        <button type="button" id="btn-export-pdf" class="btn-accent" style="flex:1;">
+                            <i class="ph-bold ph-download-simple"></i> Télécharger PDF
+                        </button>
+                        <button type="button" id="btn-restore-pdf-trigger" class="btn-secondary" style="flex:1;padding:10px;">
+                            <i class="ph-bold ph-upload-simple"></i> Restaurer PDF
+                        </button>
+                        <input type="file" id="input-restore-pdf" accept="application/pdf,.pdf" class="sr-only">
+                    </div>
+                    <div class="info-box">
+                        <i class="ph ph-info" style="font-size:15px;color:#3b82f6;flex-shrink:0;margin-top:1px;"></i>
+                        <span>Le PDF trace tous vos accès (ID, mot de passe, profil, date, client) et permet de restaurer la mémoire si le navigateur est réinitialisé.</span>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="field-section">
+                    <div class="section-label">
+                        <span class="section-label-left"><i class="ph ph-database"></i> Historique des Accès</span>
+                        <button type="button" id="btn-clear-history" style="background:none;border:none;color:var(--danger);font-size:9.5px;font-weight:700;cursor:pointer;">
+                            Vider
+                        </button>
+                    </div>
+                    <input type="text" id="input-history-search" placeholder="Rechercher un client, ID, code…"
+                           class="input-dark" style="margin-bottom:10px;">
+                    <div id="history-list" class="history-list"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="action-bar">
+            <!-- Choix des Exports -->
+            <div class="action-row">
+                <button type="button" id="btn-export-std" class="btn-primary" title="Format idéal pour envoi photo WhatsApp">
+                    <i class="ph-bold ph-image"></i> Standard (1200px)
+                </button>
+                <button type="button" id="btn-export-hd" class="btn-primary blue" title="Format Ultra Net (à envoyer en tant que Document sur WhatsApp)">
+                    <i class="ph-bold ph-star"></i> Ultra HD (2560px)
+                </button>
+            </div>
+            <!-- Actions secondaires -->
+            <div class="action-row">
+                <button type="button" id="btn-copy" class="btn-secondary" title="Copier l'image (Format Standard)">
+                    <i class="ph ph-copy"></i> Copier
+                </button>
+                <button type="button" id="btn-reset" class="btn-secondary" title="Réinitialiser">
+                    <i class="ph ph-arrow-counter-clockwise"></i> Reset
+                </button>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ═══════════ PREVIEW ═══════════ -->
+    <main class="preview-area">
+        <div class="preview-grid"></div>
+        <div class="preview-glow" id="ambient-glow"></div>
+
+        <div class="preview-badge">
+            <div class="pulse-dot"></div>
+            <span>Aperçu en direct</span>
+        </div>
+
+        <div class="preview-card-wrap">
+            <canvas id="preview-canvas" width="1200" height="750"></canvas>
+            <div id="loading-overlay" class="loading-overlay">
+                <div class="spinner"></div>
+                <span id="loading-text" style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.15em;">Rendu…</span>
+            </div>
+        </div>
+
+        <div class="preview-hint">CHOISISSEZ VOTRE EXPORT DANS LE MENU DE GAUCHE</div>
+    </main>
+
+</div>
+
+<script>
+/* ============================================================================
+   DVXPLUG - CARD v6.5
+   - Rendu SVG natif restauré (sans perte d'anti-aliasing, textes ultra-lisses)
+   - Double système d'export : Standard (1200px) et Ultra HD (2560px)
+   - 16 plateformes d'origine intactes + 5 corrigées (myCANAL, CapCut, NordVPN, ExpressVPN, Microsoft)
+   ============================================================================ */
+
+const CONFIG = {
+    PREVIEW_WIDTH:  1200,
+    PREVIEW_HEIGHT: 750,
+    EXPORT_HD_W:    2560,
+    EXPORT_HD_H:    1600,
+    SVG_WIDTH:      600,
+    SVG_HEIGHT:     375,
+    DEBOUNCE_MS:    100,
+    STATE_KEY:      'dvxplug_state_v6_5',
+    HISTORY_KEY:    'dvxplug_history_v6_1',
+    LOGO_BOX:       { x: 40, y: 82, w: 300, h: 78 },
+    QR_BOX:         { x: 460, y: 40, w: 100, h: 100 },
+    DEFAULT_STATE: {
+        themeId:     'netflix',
+        color:       '#E50914',
+        qrColor:     '#E50914',
+        qrDilution:  100,
+        date:        '12 Mai 2026',
+        validity:    '1 mois',
+        showProfile: true,
+        profile:     'Profil 1',
+        badgeTitle:  'SECURE PROTOCOL',
+        recipient:   'Client',
+        email:       'user@dvxplug.io',
+        password:    'DVX-2026-XQ',
+        qrText:      'https://dvxplug.io'
+    }
+};
+
+/* Helper uniquement pour les 5 plateformes demandées */
+const svgLogo = (svgContent) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgContent.trim());
+
+const THEMES = [
+    // 10 Plateformes Originales (100% intactes)
+    { id: "netflix",     name: "NETFLIX",         color: "#E50914", logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",           fallbackText: "NETFLIX" },
+    { id: "spotify",     name: "SPOTIFY",          color: "#1DB954", logo: "https://upload.wikimedia.org/wikipedia/commons/b/bd/2024_Spotify_Logo.svg",            fallbackText: "Spotify" },
+    { id: "prime",       name: "PRIME VIDEO",      color: "#00A8E1", logo: "https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg",       fallbackText: "prime video" },
+    { id: "crunchyroll", name: "CRUNCHYROLL",      color: "#FF6600", logo: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Crunchyroll.svg",                  fallbackText: "CRUNCHYROLL" },
+    { id: "deezer",      name: "DEEZER",           color: "#00C8FF", logo: "https://upload.wikimedia.org/wikipedia/commons/7/75/Deezer_logo%2C_2023.svg",          fallbackText: "Deezer" },
+    { id: "disney",      name: "DISNEY+",          color: "#1133FF", logo: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg",               fallbackText: "Disney+" },
+    { id: "youtube",     name: "YT PREMIUM",       color: "#FF0000", logo: "https://upload.wikimedia.org/wikipedia/commons/d/dd/YouTube_Premium_logo.svg",         fallbackText: "YouTube" },
+    { id: "appletv",     name: "APPLE TV+",        color: "#555555", logo: "https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg",           fallbackText: "Apple TV+" },
+    { id: "applemusic",  name: "APPLE MUSIC",      color: "#FA2C5E", logo: "https://upload.wikimedia.org/wikipedia/commons/2/2a/Apple_Music_logo.svg",             fallbackText: "Apple Music" },
+    { id: "max",         name: "MAX",              color: "#0066FF", logo: "https://upload.wikimedia.org/wikipedia/commons/b/b3/HBO_Max_%282025%29.svg",           fallbackText: "MAX" },
+
+    // Autres Plateformes Originales intactes + les 5 corrigées (myCANAL, NordVPN, ExpressVPN, CapCut, Microsoft)
+    { id: "mycanal",     name: "MYCANAL",          color: "#EC3655", fallbackText: "myCANAL",
+      logo: svgLogo(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 90">
+          <rect x="0" y="12" width="110" height="66" rx="12" fill="#EC3655"/>
+          <text x="55" y="57" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="38" fill="#FFFFFF" letter-spacing="-1">my</text>
+          <rect x="122" y="12" width="230" height="66" rx="12" fill="#FFFFFF"/>
+          <text x="237" y="58" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="40" fill="#08080b" letter-spacing="1">CANAL+</text>
+      </svg>`)
+    },
+    { id: "duolingo",    name: "DUOLINGO",         color: "#58CC02", logo: "https://upload.wikimedia.org/wikipedia/commons/1/15/Duolingo_logo.svg",                fallbackText: "Duolingo" },
+    { id: "linkedin",    name: "LINKEDIN",         color: "#0A66C2", logo: "https://upload.wikimedia.org/wikipedia/commons/0/01/LinkedIn_Logo.svg",                 fallbackText: "LinkedIn" },
+    { id: "nordvpn",     name: "NORDVPN",          color: "#4687FF", fallbackText: "NordVPN",
+      logo: svgLogo(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 90">
+          <circle cx="38" cy="45" r="34" fill="#4687FF"/>
+          <path d="M16 60 L30 33 L39 47 L46 35 L60 60 Z" fill="#FFFFFF"/>
+          <text x="88" y="61" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="45" fill="#FFFFFF" letter-spacing="-1">NordVPN</text>
+      </svg>`)
+    },
+    { id: "expressvpn",  name: "EXPRESSVPN",       color: "#DA3940", fallbackText: "ExpressVPN",
+      logo: svgLogo(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 90">
+          <path d="M36 12 L66 24 L66 48 C66 65 36 78 36 78 C36 78 6 65 6 48 L6 24 Z" fill="#DA3940"/>
+          <path d="M22 45 L36 32 L50 45 M26 55 L46 55" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+          <text x="82" y="60" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="42" fill="#FFFFFF" letter-spacing="-1">ExpressVPN</text>
+      </svg>`)
+    },
+    { id: "capcut",      name: "CAPCUT",           color: "#00E5FF", fallbackText: "CapCut",
+      logo: svgLogo(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 90">
+          <rect x="0" y="13" width="66" height="64" rx="15" fill="#FFFFFF"/>
+          <path d="M16 28 L50 48 L16 62 M16 62 L50 42 L16 28" fill="none" stroke="#08080b" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="84" y="61" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="46" fill="#FFFFFF" letter-spacing="-1">CapCut</text>
+      </svg>`)
+    },
+    { id: "microsoft",   name: "MICROSOFT",        color: "#00A4EF", fallbackText: "Microsoft",
+      logo: svgLogo(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 90">
+          <rect x="4"  y="15" width="28" height="28" fill="#F25022"/>
+          <rect x="36" y="15" width="28" height="28" fill="#7FBA00"/>
+          <rect x="4"  y="47" width="28" height="28" fill="#00A4EF"/>
+          <rect x="36" y="47" width="28" height="28" fill="#FFB900"/>
+          <text x="82" y="61" font-family="Inter,Arial,sans-serif" font-weight="700" font-size="45" fill="#FFFFFF" letter-spacing="-0.5">Microsoft</text>
+      </svg>`)
+    },
+    { id: "chatgpt",     name: "CHATGPT",          color: "#10A37F", logo: "https://upload.wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg",                 fallbackText: "ChatGPT" },
+    { id: "gemini",      name: "GEMINI",           color: "#4E82EE", logo: "https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg",          fallbackText: "Gemini" },
+    { id: "claude",      name: "CLAUDE",           color: "#D97757", logo: "https://upload.wikimedia.org/wikipedia/commons/7/78/Anthropic_logo.svg",               fallbackText: "Claude" },
+    { id: "snapchat",    name: "SNAPCHAT+",        color: "#FFFC00", logo: "https://upload.wikimedia.org/wikipedia/fr/c/c4/Snapchat_logo.svg",                     fallbackText: "Snapchat+" }
+];
+
+const state = {
+    themeId:          'netflix',
+    qrImageData:      '',
+    qrMode:           'generated',
+    qrFollowsTheme:   true,
+    currentLogoData:  '',
+    embeddedFontsCSS: '',
+    history:          []
+};
+
+const previewCanvas = document.getElementById('preview-canvas');
+const previewCtx    = previewCanvas.getContext('2d');
+
+const logoCanvas    = document.createElement('canvas');
+const logoCtx       = logoCanvas.getContext('2d');
+const logoCache     = new Map();
+
+/* ── UTILS ── */
+function isValidHex(hex) {
+    return /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(String(hex || '').trim());
+}
+
+function normalizeHex(hex, fallback = '#E50914') {
+    if (!isValidHex(hex)) return fallback;
+    let c = hex.trim().replace('#', '');
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    return '#' + c.toUpperCase();
+}
+
+function hexToRgb(hex) {
+    let c = normalizeHex(hex).replace('#', '');
+    const n = parseInt(c, 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+function rgbToHex(r, g, b) {
+    const to = v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0');
+    return '#' + to(r) + to(g) + to(b);
+}
+
+function rgbToHsl({ r, g, b }) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) { h = s = 0; } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    return { h: h * 360, s: s * 100, l: l * 100 };
+}
+
+function hslToRgb({ h, s, l }) {
+    h /= 360; s /= 100; l /= 100;
+    let r, g, b;
+    if (s === 0) { r = g = b = l; } else {
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+    return { r: r * 255, g: g * 255, b: b * 255 };
+}
+
+function darkenColorHSL(hex, lightnessDelta = 35) {
+    const hsl = rgbToHsl(hexToRgb(hex));
+    hsl.l = Math.max(0, hsl.l - lightnessDelta);
+    hsl.s = Math.max(0, hsl.s - 10);
+    return rgbToHex(...Object.values(hslToRgb(hsl)));
+}
+
+function computeDilutedQrColor(qrHex, intensityPercent) {
+    const ratio = Math.max(0.25, Math.min(1, Number(intensityPercent) / 100));
+    if (ratio >= 0.99) return normalizeHex(qrHex);
+    const fg = hexToRgb(qrHex);
+    const bg = { r: 12, g: 12, b: 14 };
+    return rgbToHex(
+        bg.r + (fg.r - bg.r) * ratio,
+        bg.g + (fg.g - bg.g) * ratio,
+        bg.b + (fg.b - bg.b) * ratio
+    );
+}
+
+function relativeLuminance({ r, g, b }) {
+    const a = [r, g, b].map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+}
+
+function computeAdaptiveGlow(baseColor) {
+    const lum = relativeLuminance(hexToRgb(baseColor));
+    const intensity = 1 - lum;
+    return {
+        outer:  { opacity: 0.05 + intensity * 0.08, stroke: 12 + intensity * 4 },
+        middle: { opacity: 0.08 + intensity * 0.10, stroke: 8  + intensity * 3 },
+        inner:  { opacity: 0.14 + intensity * 0.10, stroke: 4  + intensity * 2 }
+    };
+}
+
+function fitText(str, maxChars) {
+    if (!str) return '';
+    return str.length <= maxChars ? str : str.slice(0, maxChars - 1) + '…';
+}
+
+function adaptiveFontSize(str, base, min, threshold) {
+    if (!str) return base;
+    if (str.length <= threshold) return base;
+    return Math.max(min, Math.round((base * threshold) / str.length));
+}
+
+function escapeXML(s) {
+    return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
+
+function debounce(fn, ms) {
+    let t;
+    return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), ms);
+    };
+}
+
+/* ── EMBEDDING POLICES ── */
+async function preloadAndEmbedFonts() {
+    try {
+        const cssUrl = 'https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&family=JetBrains+Mono:wght@400;700&display=swap';
+        const cssRes = await fetch(cssUrl);
+        let cssText = await cssRes.text();
+
+        const urlRegex = /url\((https:\/\/[^)]+\.woff2)\)/g;
+        const matches = [...cssText.matchAll(urlRegex)];
+
+        await Promise.all(matches.map(async match => {
+            const fontUrl = match[1];
+            const fontRes = await fetch(fontUrl);
+            const blob = await fontRes.blob();
+            const base64 = await new Promise(res => {
+                const reader = new FileReader();
+                reader.onloadend = () => res(reader.result);
+                reader.readAsDataURL(blob);
+            });
+            cssText = cssText.replace(fontUrl, base64);
+        }));
+
+        state.embeddedFontsCSS = cssText;
+    } catch (e) {
+        state.embeddedFontsCSS = '';
+    }
+}
+
+/* ── TOAST ── */
+function toast(message, type = 'info', duration = 2800) {
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    const icons = {
+        success: 'ph-check-circle',
+        error:   'ph-warning-circle',
+        info:    'ph-info',
+        warning: 'ph-warning'
+    };
+    el.innerHTML = `<i class="ph ${icons[type] || icons.info}" style="font-size:15px;flex-shrink:0;"></i><span>${escapeXML(message)}</span>`;
+    container.appendChild(el);
+    setTimeout(() => {
+        el.classList.add('out');
+        setTimeout(() => el.remove(), 200);
+    }, duration);
+}
+
+/* ── LOADING ── */
+const loadingOverlay = document.getElementById('loading-overlay');
+const loadingText    = document.getElementById('loading-text');
+let loadingCount     = 0;
+
+function showLoading(text = 'Rendu…') {
+    loadingCount++;
+    loadingText.textContent = text;
+    loadingOverlay.classList.add('active');
+}
+
+function hideLoading() {
+    loadingCount = Math.max(0, loadingCount - 1);
+    if (loadingCount === 0) loadingOverlay.classList.remove('active');
+}
+
+/* ── LOGO (Chargement avec Fallback) ── */
+function generateFallbackLogo(theme) {
+    const w = 1200, h = 312;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+        <text x="0" y="${h * 0.7}" font-family="Inter,Arial,sans-serif" font-size="${h * 0.65}" font-weight="900" fill="${theme.color}" letter-spacing="-2">${escapeXML(theme.fallbackText || theme.name)}</text>
+    </svg>`;
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+function loadLogoDataURL(theme) {
+    return new Promise(resolve => {
+        if (logoCache.has(theme.id)) {
+            resolve(logoCache.get(theme.id));
+            return;
+        }
+        const finalize = dataURL => {
+            logoCache.set(theme.id, dataURL);
+            resolve(dataURL);
+        };
+        if (theme.logo.startsWith('data:image/svg+xml')) {
+            finalize(theme.logo);
+            return;
+        }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            try {
+                const targetW = 2400;
+                const aspect = (img.naturalHeight || img.height || 156) / (img.naturalWidth || img.width || 600);
+                const targetH = Math.round(targetW * aspect);
+                logoCanvas.width = targetW;
+                logoCanvas.height = targetH;
+                logoCtx.clearRect(0, 0, targetW, targetH);
+                logoCtx.imageSmoothingEnabled = true;
+                logoCtx.imageSmoothingQuality = 'high';
+                logoCtx.drawImage(img, 0, 0, targetW, targetH);
+                finalize(logoCanvas.toDataURL('image/png'));
+            } catch (e) {
+                finalize(generateFallbackLogo(theme));
+            }
+        };
+        img.onerror = () => finalize(generateFallbackLogo(theme));
+        img.src = theme.logo;
+    });
+}
+
+/* ── SVG CARD (Mise à l'échelle vectorielle NATIVE du navigateur) ── */
+function buildCardSVG(targetWidth, targetHeight) {
+    const rawDate     = document.getElementById('input-date').value || '-';
+    const rawValidity = document.getElementById('input-validity').value || '-';
+    const rawProfile  = document.getElementById('input-profile').value || '-';
+    const showProfile = document.getElementById('input-show-profile').checked;
+    const rawEmail    = document.getElementById('input-email').value || '-';
+    const rawPassword = document.getElementById('input-password').value || '-';
+    const rawBadge    = document.getElementById('input-badge-title').value || 'SECURE PROTOCOL';
+
+    const baseColor  = normalizeHex(document.getElementById('input-color').value);
+    const darkColor  = darkenColorHSL(baseColor, 35);
+    const glow       = computeAdaptiveGlow(baseColor);
+
+    const date       = escapeXML(fitText(rawDate, showProfile ? 18 : 22));
+    const validity   = escapeXML(fitText(rawValidity, showProfile ? 14 : 18));
+    const profile    = escapeXML(fitText(rawProfile, 18));
+    const email      = escapeXML(fitText(rawEmail, 26));
+    const password   = escapeXML(fitText(rawPassword, 22));
+    const badgeTitle = escapeXML(fitText(rawBadge, 28));
+
+    const emailFontSize    = adaptiveFontSize(rawEmail, 18, 12, 18);
+    const passwordFontSize = adaptiveFontSize(rawPassword, 18, 12, 16);
+    const dateFontSize     = adaptiveFontSize(rawDate, 16, 11, showProfile ? 13 : 14);
+    const validityFontSize = adaptiveFontSize(rawValidity, 16, 11, 12);
+    const profileFontSize  = adaptiveFontSize(rawProfile, 16, 11, 13);
+
+    const { LOGO_BOX, QR_BOX } = CONFIG;
+
+    const qrContent = state.qrImageData
+        ? `<defs><clipPath id="qrClip"><rect x="9" y="9" width="82" height="82" rx="6"/></clipPath></defs>
+           <image href="${state.qrImageData}" x="9" y="9" width="82" height="82" clip-path="url(#qrClip)"/>`
+        : `<g opacity="0.55">
+             <rect x="18" y="18" width="64" height="64" rx="8" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.2" stroke-dasharray="3 3"/>
+             <g transform="translate(50,46)" fill="rgba(255,255,255,0.45)">
+               <rect x="-18" y="-12" width="10" height="10" rx="2"/>
+               <rect x="8" y="-12" width="10" height="10" rx="2"/>
+               <rect x="-18" y="6" width="10" height="10" rx="2"/>
+               <rect x="-2" y="0" width="4" height="4" rx="1"/>
+               <rect x="6" y="8" width="4" height="4" rx="1"/>
+             </g>
+             <text x="50" y="80" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="rgba(255,255,255,0.4)" font-weight="700" letter-spacing="1.5">AUCUN QR</text>
+           </g>`;
+
+    const logoFragment = state.currentLogoData
+        ? `<g transform="translate(${LOGO_BOX.x},${LOGO_BOX.y})">
+             <image href="${state.currentLogoData}" width="${LOGO_BOX.w}" height="${LOGO_BOX.h}" preserveAspectRatio="xMinYMid meet"/>
+           </g>`
+        : '';
+
+    const metadataColumnsFragment = showProfile
+        ? `<g transform="translate(40,195)">
+               <text x="0" y="0" class="label">Date d'expiration</text>
+               <text x="0" y="24" class="inter" font-size="${dateFontSize}" font-weight="700">${date}</text>
+               <text x="195" y="0" class="label">Validité</text>
+               <text x="195" y="24" class="inter" font-size="${validityFontSize}" font-weight="700">${validity}</text>
+               <text x="345" y="0" class="label">Profil</text>
+               <text x="345" y="24" class="inter" font-size="${profileFontSize}" font-weight="700">${profile}</text>
+               <rect x="0" y="38" width="25" height="3" rx="1.5" fill="${baseColor}"/>
+           </g>`
+        : `<g transform="translate(40,195)">
+               <text x="0" y="0" class="label">Date d'expiration</text>
+               <text x="0" y="24" class="inter" font-size="${dateFontSize}" font-weight="700">${date}</text>
+               <text x="235" y="0" class="label">Validité</text>
+               <text x="235" y="24" class="inter" font-size="${validityFontSize}" font-weight="700">${validity}</text>
+               <rect x="0" y="38" width="25" height="3" rx="1.5" fill="${baseColor}"/>
+           </g>`;
+
+    // ATTENTION: Il est crucial que l'attribut width et height soient variables, 
+    // mais que le viewBox reste fixe à "0 0 600 375" pour que le navigateur upscale vectoriellement.
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${targetWidth}" height="${targetHeight}" viewBox="0 0 600 375">
+        <defs>
+            <linearGradient id="mainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%"   stop-color="${baseColor}" />
+                <stop offset="100%" stop-color="${darkColor}" />
+            </linearGradient>
+            <style>
+                ${state.embeddedFontsCSS}
+                .inter { font-family:'Inter',sans-serif; fill:white; }
+                .mono  { font-family:'JetBrains Mono',monospace; fill:white; }
+                .label { font-family:'Inter',sans-serif; fill:rgba(255,255,255,0.45); font-size:8px; font-weight:800; letter-spacing:2px; text-transform:uppercase; }
+            </style>
+        </defs>
+        <rect width="600" height="375" fill="#0c0c0e"/>
+        <rect width="600" height="375" fill="url(#mainGrad)" opacity="0.25"/>
+        <rect x="40" y="32" width="25" height="3" rx="1.5" fill="${baseColor}"/>
+        <text x="40" y="65" class="inter" font-size="11" font-weight="900" letter-spacing="3">${badgeTitle}</text>
+        ${logoFragment}
+        <g transform="translate(${QR_BOX.x},${QR_BOX.y})">
+            <rect x="-8" y="-8" width="116" height="116" rx="24" fill="none" stroke="${baseColor}" stroke-width="${glow.outer.stroke}" opacity="${glow.outer.opacity}"/>
+            <rect x="-5" y="-5" width="110" height="110" rx="22" fill="none" stroke="${baseColor}" stroke-width="${glow.middle.stroke}" opacity="${glow.middle.opacity}"/>
+            <rect x="-2" y="-2" width="104" height="104" rx="19" fill="none" stroke="${baseColor}" stroke-width="${glow.inner.stroke}" opacity="${glow.inner.opacity}"/>
+            <rect width="100" height="100" rx="16" fill="rgba(255,255,255,0.035)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+            ${qrContent}
+        </g>
+        ${metadataColumnsFragment}
+        <g transform="translate(30,265)">
+            <rect width="540" height="100" rx="12" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+            <text x="30" y="35" class="label">Utilisateur / ID</text>
+            <text x="30" y="65" class="mono" font-size="${emailFontSize}" font-weight="400">${email}</text>
+            <text x="300" y="35" class="label">Code d'accès</text>
+            <text x="300" y="65" class="mono" font-size="${passwordFontSize}" font-weight="400" letter-spacing="1.5">${password}</text>
+            <line x1="270" y1="20" x2="270" y2="80" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        </g>
+        <text x="565" y="345" class="label" font-size="7" opacity="0.15" text-anchor="end" transform="rotate(-90,565,345)">DVXPLUG-CARD-CORE</text>
+    </svg>`;
+}
+
+/* ── RENDER ── */
+function renderToCanvas(ctx, w, h, svgString) {
+    return new Promise((resolve, reject) => {
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        const img = new Image();
+        img.onload = () => {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.fillStyle = '#0c0c0e';
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(url);
+            resolve();
+        };
+        img.onerror = (err) => {
+            URL.revokeObjectURL(url);
+            reject(err);
+        };
+        img.src = url;
+    });
+}
+
+async function renderPreview() {
+    try {
+        const svg = buildCardSVG(CONFIG.PREVIEW_WIDTH, CONFIG.PREVIEW_HEIGHT);
+        await renderToCanvas(previewCtx, CONFIG.PREVIEW_WIDTH, CONFIG.PREVIEW_HEIGHT, svg);
+        saveStateToStorage();
+    } catch (e) {
+        toast('Erreur de rendu', 'error');
+    }
+}
+
+/* ── FONCTION GLOBALE D'EXPORTATION ── */
+async function exportCard(width, height, labelName) {
+    try {
+        showLoading(`Export ${labelName}…`);
+        recordAccessInHistory(true);
+        
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        const svg = buildCardSVG(width, height);
+        await renderToCanvas(tempCtx, width, height, svg);
+        
+        tempCanvas.toBlob(blob => {
+            if (!blob) {
+                toast('Échec de l\'export', 'error');
+                hideLoading();
+                return;
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dvxplug-card-${labelName.toLowerCase()}-${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast(`Export ${labelName} réussi ✓`, 'success');
+            hideLoading();
+        }, 'image/png', 1.0);
+    } catch (e) {
+        toast('Erreur d\'export', 'error');
+        hideLoading();
+    }
+}
+
+async function copyCardToClipboard() {
+    if (!navigator.clipboard || !window.ClipboardItem) {
+        toast('Presse-papier non supporté', 'warning');
+        return;
+    }
+    try {
+        showLoading('Copie…');
+        recordAccessInHistory(true);
+        // On copie le format standard qui est le plus sûr pour le presse papier
+        const blob = await new Promise(res => previewCanvas.toBlob(res, 'image/png', 1.0));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        toast('Carte copiée ✓', 'success');
+    } catch (e) {
+        toast('Impossible de copier', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+/* ── COULEURS UI ── */
+function updateThemeColorUI(hex) {
+    const validHex = normalizeHex(hex);
+    document.getElementById('input-color').value = validHex;
+    document.getElementById('input-color-hex').value = validHex;
+    document.getElementById('color-swatch').style.background = validHex;
+}
+
+function updateQrColorUI(hex, dilutionPercent) {
+    const validHex = normalizeHex(hex);
+    const dilution = Number(dilutionPercent ?? document.getElementById('input-qr-dilution').value ?? 100);
+    const finalHex = computeDilutedQrColor(validHex, dilution);
+
+    document.getElementById('input-qr-color').value = validHex;
+    document.getElementById('input-qr-color-hex').value = validHex;
+    document.getElementById('input-qr-dilution').value = dilution;
+    document.getElementById('qr-dilution-label').textContent = `${dilution}%`;
+    document.getElementById('qr-color-swatch').style.background = finalHex;
+}
+
+function updateProfileToggleUI(isShown) {
+    const checkbox = document.getElementById('input-show-profile');
+    const input    = document.getElementById('input-profile');
+    const label    = document.getElementById('profile-toggle-text');
+    checkbox.checked = Boolean(isShown);
+    input.disabled   = !checkbox.checked;
+    label.textContent = checkbox.checked ? 'Affiché' : 'Masqué';
+}
+
+/* ── THEME ── */
+async function applyTheme(theme, btn, skipRender = false) {
+    try {
+        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+        const dataURL = await loadLogoDataURL(theme);
+        state.currentLogoData = dataURL;
+        state.themeId = theme.id;
+
+        updateThemeColorUI(theme.color);
+        if (state.qrFollowsTheme) {
+            updateQrColorUI(theme.color);
+        }
+
+        if (btn) btn.classList.add('active');
+
+        if (state.qrMode === 'generated' && document.getElementById('input-qr-text').value.trim()) {
+            await generateQRCode(true);
+        } else if (!skipRender) {
+            await renderPreview();
+        }
+    } catch (e) {
+        toast(`Impossible de charger ${theme.name}`, 'error');
+    }
+}
+
+function loadThemes() {
+    const grid = document.getElementById('themes-grid');
+    grid.innerHTML = '';
+    THEMES.forEach(theme => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'theme-btn';
+        btn.dataset.themeId = theme.id;
+        btn.innerHTML = `
+            <div class="check-mark"><i class="ph-bold ph-check" style="font-size:8px;color:white;"></i></div>
+            <img src="${theme.logo}" alt="${escapeXML(theme.name)}"
+                 style="width:40px;height:30px;object-fit:contain;"
+                 onerror="this.replaceWith(Object.assign(document.createElement('div'),{textContent:'${escapeXML(theme.fallbackText || theme.name)}',style:'width:40px;height:30px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;color:${theme.color};text-align:center;line-height:1.1;'}))">
+            <span>${escapeXML(theme.name)}</span>`;
+        btn.addEventListener('click', () => applyTheme(theme, btn));
+        grid.appendChild(btn);
+    });
+}
+
+/* ── QR CODE (Généré en HD 1024x1024) ── */
+function generateQRCode(silent = false) {
+    return new Promise(resolve => {
+        const text = document.getElementById('input-qr-text').value.trim();
+        if (!text) {
+            if (!silent) toast('Entre un texte ou une URL', 'warning');
+            resolve();
+            return;
+        }
+        if (typeof QRCode === 'undefined') {
+            resolve();
+            return;
+        }
+
+        const rawQrColor = normalizeHex(document.getElementById('input-qr-color').value);
+        const dilution   = Number(document.getElementById('input-qr-dilution').value || 100);
+        const finalQrHex = computeDilutedQrColor(rawQrColor, dilution);
+
+        const tempDiv = document.createElement('div');
+        tempDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+        document.body.appendChild(tempDiv);
+
+        if (!silent) showLoading('QR Code…');
+        try {
+            new QRCode(tempDiv, {
+                text,
+                width: 1024,
+                height: 1024,
+                colorDark: finalQrHex,
+                colorLight: '#0c0c0e',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            const waitCanvas = (tries = 30) => {
+                const canvas = tempDiv.querySelector('canvas');
+                if (canvas) {
+                    state.qrImageData = canvas.toDataURL('image/png');
+                    state.qrMode = 'generated';
+                    const dz = document.getElementById('qr-drop-zone');
+                    const dzLabel = document.getElementById('qr-drop-label');
+                    dz.classList.add('has-file');
+                    dzLabel.textContent = 'QR généré avec succès';
+                    document.body.removeChild(tempDiv);
+                    if (!silent) {
+                        hideLoading();
+                        toast('QR Code généré ✓', 'success');
+                    }
+                    renderPreview().then(resolve);
+                    return;
+                }
+                if (tries <= 0) {
+                    document.body.removeChild(tempDiv);
+                    if (!silent) {
+                        hideLoading();
+                        toast('Échec génération QR', 'error');
+                    }
+                    resolve();
+                    return;
+                }
+                requestAnimationFrame(() => waitCanvas(tries - 1));
+            };
+            waitCanvas();
+        } catch (e) {
+            document.body.removeChild(tempDiv);
+            if (!silent) {
+                hideLoading();
+                toast('Erreur QR Code', 'error');
+            }
+            resolve();
+        }
+    });
+}
+
+function handleQrImport(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+        toast('Format non supporté', 'error');
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        toast('Image trop lourde (max 5 Mo)', 'error');
+        return;
+    }
+    showLoading('Import QR…');
+    const dz = document.getElementById('qr-drop-zone');
+    const dzLabel = document.getElementById('qr-drop-label');
+    dz.classList.add('has-file');
+    dzLabel.textContent = file.name;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        state.qrImageData = ev.target.result;
+        state.qrMode = 'uploaded';
+        hideLoading();
+        toast('QR importé', 'success');
+        renderPreview();
+    };
+    reader.onerror = () => {
+        hideLoading();
+        toast('Lecture impossible', 'error');
+    };
+    reader.readAsDataURL(file);
+}
+
+/* ── HISTORIQUE & MÉMOIRE-PDF ── */
+function loadHistoryFromStorage() {
+    try {
+        const raw = localStorage.getItem(CONFIG.HISTORY_KEY);
+        state.history = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(state.history)) state.history = [];
+    } catch (e) {
+        state.history = [];
+    }
+    renderHistoryList();
+}
+
+function saveHistoryToStorage() {
+    try {
+        localStorage.setItem(CONFIG.HISTORY_KEY, JSON.stringify(state.history));
+    } catch (e) { /* Ignore */ }
+    renderHistoryList();
+}
+
+function recordAccessInHistory(silentIfDuplicate = false) {
+    const themeObj    = THEMES.find(t => t.id === state.themeId);
+    const platform    = themeObj ? themeObj.name : 'CUSTOM';
+    const recipient   = document.getElementById('input-recipient').value.trim() || 'Client';
+    const email       = document.getElementById('input-email').value.trim() || '-';
+    const password    = document.getElementById('input-password').value.trim() || '-';
+    const showProfile = document.getElementById('input-show-profile').checked;
+    const profile     = showProfile ? (document.getElementById('input-profile').value.trim() || '-') : 'Masqué';
+    const badgeTitle  = document.getElementById('input-badge-title').value.trim() || 'SECURE PROTOCOL';
+    const dateExp     = document.getElementById('input-date').value.trim() || '-';
+    const validity    = document.getElementById('input-validity').value.trim() || '-';
+    const color       = document.getElementById('input-color').value;
+
+    const latest = state.history[0];
+    if (latest && latest.email === email && latest.password === password && latest.recipient === recipient && latest.platform === platform && latest.profile === profile) {
+        if (!silentIfDuplicate) toast('Cet accès est déjà enregistré en haut de la liste', 'info');
+        return;
+    }
+
+    const entry = {
+        id:          'dvx_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        createdAt:   new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }),
+        themeId:     state.themeId || 'netflix',
+        platform,
+        color,
+        recipient,
+        email,
+        password,
+        showProfile,
+        profile,
+        badgeTitle,
+        dateExp,
+        validity
+    };
+
+    state.history.unshift(entry);
+    saveHistoryToStorage();
+    if (!silentIfDuplicate) toast('Accès enregistré dans la mémoire ✓', 'success');
+}
+
+function renderHistoryList() {
+    const listEl  = document.getElementById('history-list');
+    const countEl = document.getElementById('history-count');
+    const query   = (document.getElementById('input-history-search')?.value || '').toLowerCase().trim();
+
+    countEl.textContent = String(state.history.length);
+
+    const filtered = state.history.filter(item => {
+        if (!query) return true;
+        return [item.recipient, item.email, item.password, item.platform, item.profile, item.badgeTitle, item.createdAt]
+            .some(val => String(val || '').toLowerCase().includes(query));
+    });
+
+    if (filtered.length === 0) {
+        listEl.innerHTML = `<div style="text-align:center;padding:20px 10px;color:#475569;font-size:11px;">
+            Aucun accès enregistré.
+        </div>`;
+        return;
+    }
+
+    listEl.innerHTML = '';
+    filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        const profileTag = item.profile && item.profile !== 'Masqué' ? ` · ${item.profile}` : '';
+        card.innerHTML = `
+            <div class="history-top">
+                <span class="history-platform" style="border-left:3px solid ${escapeXML(item.color || '#3b82f6')}">${escapeXML(item.platform)}${escapeXML(profileTag)}</span>
+                <span class="history-date">${escapeXML(item.createdAt)}</span>
+            </div>
+            <div class="history-creds">
+                <span>${escapeXML(fitText(item.email, 22))}</span>
+                <strong style="color:#60a5fa;">${escapeXML(fitText(item.password, 16))}</strong>
+            </div>
+            <div class="history-meta">
+                <span><i class="ph-bold ph-user"></i> ${escapeXML(fitText(item.recipient, 20))} (${escapeXML(item.dateExp)})</span>
+                <div class="history-actions">
+                    <button type="button" class="btn-mini btn-load">Charger</button>
+                    <button type="button" class="btn-mini danger btn-del"><i class="ph-bold ph-trash"></i></button>
+                </div>
+            </div>
+        `;
+
+        card.querySelector('.btn-load').addEventListener('click', async () => {
+            document.getElementById('input-recipient').value   = item.recipient || '';
+            document.getElementById('input-email').value       = item.email || '';
+            document.getElementById('input-password').value    = item.password || '';
+            document.getElementById('input-badge-title').value = item.badgeTitle || 'SECURE PROTOCOL';
+            document.getElementById('input-date').value        = item.dateExp || '';
+            document.getElementById('input-validity').value    = item.validity || '';
+
+            if (item.profile && item.profile !== 'Masqué') {
+                document.getElementById('input-profile').value = item.profile;
+                updateProfileToggleUI(true);
+            } else if (item.showProfile === false) {
+                updateProfileToggleUI(false);
+            }
+
+            const foundTheme = THEMES.find(t => t.id === item.themeId);
+            if (foundTheme) {
+                const btn = document.querySelector(`.theme-btn[data-theme-id="${foundTheme.id}"]`);
+                await applyTheme(foundTheme, btn);
+            } else {
+                await renderPreview();
+            }
+            toast(`Accès de ${item.recipient} chargé`, 'info');
+        });
+
+        card.querySelector('.btn-del').addEventListener('click', () => {
+            state.history = state.history.filter(h => h.id !== item.id);
+            saveHistoryToStorage();
+            toast('Accès supprimé', 'info');
+        });
+
+        listEl.appendChild(card);
+    });
+}
+
+function exportHistoryToPDF() {
+    if (state.history.length === 0) {
+        toast('Aucun accès dans l\'historique à exporter', 'warning');
+        return;
+    }
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        toast('Module PDF en chargement, réessayez', 'error');
+        return;
+    }
+
+    try {
+        showLoading('Création PDF…');
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+        doc.setFillColor(14, 14, 18);
+        doc.rect(0, 0, 210, 32, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(15);
+        doc.text('DVXPLUG - CARD | HISTORIQUE DES ACCES', 14, 15);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(160, 174, 192);
+        doc.text(`Export du ${new Date().toLocaleString('fr-FR')}  |  Total : ${state.history.length} acces`, 14, 22);
+        doc.text('Fichier de sauvegarde restaurable dans l\'onglet Memoire de DVXPLUG - CARD.', 14, 27);
+
+        let y = 42;
+        const drawHeader = (posY) => {
+            doc.setFillColor(30, 41, 59);
+            doc.rect(10, posY - 5, 190, 8, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(255, 255, 255);
+            doc.text('DATE', 13, posY);
+            doc.text('ATTRIBUE A', 40, posY);
+            doc.text('PLATEFORME / PROFIL', 80, posY);
+            doc.text('IDENTIFIANT (ID)', 125, posY);
+            doc.text('CODE D\'ACCES', 168, posY);
+        };
+
+        drawHeader(y);
+        y += 8;
+
+        state.history.forEach((item, index) => {
+            if (y > 276) {
+                doc.addPage();
+                y = 20;
+                drawHeader(y);
+                y += 8;
+            }
+            if (index % 2 === 0) {
+                doc.setFillColor(245, 247, 250);
+                doc.rect(10, y - 4.5, 190, 7.5, 'F');
+            }
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7.5);
+            doc.setTextColor(30, 41, 59);
+            doc.text(fitText(String(item.createdAt || ''), 16), 13, y);
+            doc.setFont('helvetica', 'bold');
+            doc.text(fitText(String(item.recipient || ''), 20), 40, y);
+            doc.setFont('helvetica', 'normal');
+            const profLabel = item.profile && item.profile !== 'Masqué' ? item.profile : (item.badgeTitle || '');
+            doc.text(fitText(`${item.platform} (${profLabel})`, 24), 80, y);
+            doc.setFont('courier', 'bold');
+            doc.text(fitText(String(item.email || ''), 24), 125, y);
+            doc.text(fitText(String(item.password || ''), 18), 168, y);
+
+            y += 7.5;
+        });
+
+        const jsonPayload = JSON.stringify(state.history);
+        const base64Payload = btoa(unescape(encodeURIComponent(jsonPayload)));
+        const backupMarker = `DVXPLUG_BACKUP_START:${base64Payload}:DVXPLUG_BACKUP_END`;
+
+        doc.setProperties({
+            title: 'DVXPLUG - CARD Backup',
+            subject: backupMarker,
+            creator: 'DVXPLUG - CARD'
+        });
+
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(1);
+        doc.setTextColor(255, 255, 255);
+        doc.text(backupMarker, 5, 293);
+
+        doc.save(`DVXPLUG-MEMOIRE-${new Date().toISOString().slice(0, 10)}.pdf`);
+        toast('PDF Historique téléchargé ✓', 'success');
+    } catch (e) {
+        toast('Erreur PDF', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function restoreHistoryFromPDF(file) {
+    if (!file) return;
+    showLoading('Restauration…');
+    const reader = new FileReader();
+    reader.onload = ev => {
+        try {
+            const bytes = new Uint8Array(ev.target.result);
+            let rawText = '';
+            const chunkSize = 32768;
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+                rawText += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+            }
+
+            const match = rawText.match(/DVXPLUG_BACKUP_START:([A-Za-z0-9+/=]+):DVXPLUG_BACKUP_END/);
+            if (!match || !match[1]) {
+                toast('Aucune sauvegarde DVXPLUG trouvée dans ce PDF', 'error');
+                hideLoading();
+                return;
+            }
+
+            const restoredList = JSON.parse(decodeURIComponent(escape(atob(match[1]))));
+            if (!Array.isArray(restoredList)) throw new Error('Invalid');
+
+            const existingIds = new Set(state.history.map(item => item.id));
+            let added = 0;
+            restoredList.forEach(item => {
+                if (item && item.id && !existingIds.has(item.id)) {
+                    state.history.push(item);
+                    existingIds.add(item.id);
+                    added++;
+                }
+            });
+
+            saveHistoryToStorage();
+            toast(`${added} accès restaurés depuis le PDF ✓`, 'success');
+        } catch (err) {
+            toast('PDF invalide ou corrompu', 'error');
+        } finally {
+            hideLoading();
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+/* ── PERSISTANCE & RESET ── */
+function saveStateToStorage() {
+    try {
+        const payload = {
+            themeId:        state.themeId,
+            qrFollowsTheme: state.qrFollowsTheme,
+            color:          document.getElementById('input-color').value,
+            qrColor:        document.getElementById('input-qr-color').value,
+            qrDilution:     document.getElementById('input-qr-dilution').value,
+            date:           document.getElementById('input-date').value,
+            validity:       document.getElementById('input-validity').value,
+            showProfile:    document.getElementById('input-show-profile').checked,
+            profile:        document.getElementById('input-profile').value,
+            badgeTitle:     document.getElementById('input-badge-title').value,
+            recipient:      document.getElementById('input-recipient').value,
+            email:          document.getElementById('input-email').value,
+            password:       document.getElementById('input-password').value,
+            qrText:         document.getElementById('input-qr-text').value
+        };
+        localStorage.setItem(CONFIG.STATE_KEY, JSON.stringify(payload));
+    } catch (e) { /* Ignore */ }
+}
+
+function loadStateFromStorage() {
+    try {
+        const raw = localStorage.getItem(CONFIG.STATE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+async function resetAll() {
+    localStorage.removeItem(CONFIG.STATE_KEY);
+    const d = CONFIG.DEFAULT_STATE;
+    state.qrFollowsTheme = true;
+    state.qrMode = 'generated';
+
+    document.getElementById('input-date').value        = d.date;
+    document.getElementById('input-validity').value    = d.validity;
+    document.getElementById('input-profile').value     = d.profile;
+    updateProfileToggleUI(d.showProfile);
+    document.getElementById('input-badge-title').value = d.badgeTitle;
+    document.getElementById('input-recipient').value   = d.recipient;
+    document.getElementById('input-email').value       = d.email;
+    document.getElementById('input-password').value    = d.password;
+    document.getElementById('input-qr-text').value     = d.qrText;
+    document.getElementById('input-qr-file').value     = '';
+
+    updateThemeColorUI(d.color);
+    updateQrColorUI(d.qrColor, d.qrDilution);
+
+    const dz = document.getElementById('qr-drop-zone');
+    dz.classList.remove('has-file');
+    document.getElementById('qr-drop-label').textContent = 'Cliquer pour importer (JPG, PNG, SVG)';
+
+    const defaultTheme = THEMES[0];
+    const firstBtn = document.querySelector(`.theme-btn[data-theme-id="${defaultTheme.id}"]`);
+    await applyTheme(defaultTheme, firstBtn, true);
+    await generateQRCode(true);
+    toast('Réinitialisé', 'info');
+}
+
+function downloadSelfHTML() {
+    const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'DVXPLUG-CARD.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('DVXPLUG-CARD.html téléchargé ✓', 'success');
+}
+
+function initTabs() {
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            buttons.forEach(b => b.setAttribute('aria-selected', 'false'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.setAttribute('aria-selected', 'true');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+}
+
+function generateRandomAccessCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const seg = len => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `DVX-${seg(4)}-${seg(4)}`;
+}
+
+/* ── INITIALISATION ── */
+async function init() {
+    loadThemes();
+    initTabs();
+    loadHistoryFromStorage();
+
+    const saved = loadStateFromStorage() || CONFIG.DEFAULT_STATE;
+    state.qrFollowsTheme = saved.qrFollowsTheme ?? true;
+
+    document.getElementById('input-date').value        = saved.date        ?? CONFIG.DEFAULT_STATE.date;
+    document.getElementById('input-validity').value    = saved.validity    ?? CONFIG.DEFAULT_STATE.validity;
+    document.getElementById('input-profile').value     = saved.profile     ?? CONFIG.DEFAULT_STATE.profile;
+    updateProfileToggleUI(saved.showProfile ?? CONFIG.DEFAULT_STATE.showProfile);
+    document.getElementById('input-badge-title').value = saved.badgeTitle  ?? CONFIG.DEFAULT_STATE.badgeTitle;
+    document.getElementById('input-recipient').value   = saved.recipient   ?? CONFIG.DEFAULT_STATE.recipient;
+    document.getElementById('input-email').value       = saved.email       ?? CONFIG.DEFAULT_STATE.email;
+    document.getElementById('input-password').value    = saved.password    ?? CONFIG.DEFAULT_STATE.password;
+    document.getElementById('input-qr-text').value     = saved.qrText      ?? CONFIG.DEFAULT_STATE.qrText;
+
+    updateThemeColorUI(saved.color || CONFIG.DEFAULT_STATE.color);
+    updateQrColorUI(saved.qrColor || saved.color || CONFIG.DEFAULT_STATE.qrColor, saved.qrDilution ?? CONFIG.DEFAULT_STATE.qrDilution);
+
+    const debouncedRender = debounce(renderPreview, CONFIG.DEBOUNCE_MS);
+    const debouncedQR     = debounce(() => generateQRCode(true), 160);
+
+    ['input-date', 'input-validity', 'input-profile', 'input-badge-title', 'input-recipient', 'input-email', 'input-password']
+        .forEach(id => document.getElementById(id).addEventListener('input', debouncedRender));
+
+    document.getElementById('input-show-profile').addEventListener('change', e => {
+        updateProfileToggleUI(e.target.checked);
+        renderPreview();
+    });
+
+    document.getElementById('input-qr-text').addEventListener('input', debouncedQR);
+
+    document.getElementById('input-color').addEventListener('input', e => {
+        updateThemeColorUI(e.target.value);
+        if (state.qrFollowsTheme) {
+            updateQrColorUI(e.target.value);
+            if (state.qrMode === 'generated') debouncedQR();
+        } else {
+            debouncedRender();
+        }
+    });
+
+    document.getElementById('input-color-hex').addEventListener('input', e => {
+        if (isValidHex(e.target.value)) {
+            updateThemeColorUI(e.target.value);
+            if (state.qrFollowsTheme) {
+                updateQrColorUI(e.target.value);
+                if (state.qrMode === 'generated') debouncedQR();
+            } else {
+                debouncedRender();
+            }
+        }
+    });
+
+    document.getElementById('input-qr-color').addEventListener('input', e => {
+        state.qrFollowsTheme = false;
+        updateQrColorUI(e.target.value);
+        if (state.qrMode === 'generated') debouncedQR();
+    });
+
+    document.getElementById('input-qr-color-hex').addEventListener('input', e => {
+        if (isValidHex(e.target.value)) {
+            state.qrFollowsTheme = false;
+            updateQrColorUI(e.target.value);
+            if (state.qrMode === 'generated') debouncedQR();
+        }
+    });
+
+    document.getElementById('input-qr-dilution').addEventListener('input', e => {
+        updateQrColorUI(document.getElementById('input-qr-color').value, e.target.value);
+        if (state.qrMode === 'generated') debouncedQR();
+    });
+
+    document.getElementById('btn-sync-qr-color').addEventListener('click', () => {
+        state.qrFollowsTheme = true;
+        const themeColor = document.getElementById('input-color').value;
+        updateQrColorUI(themeColor, 100);
+        generateQRCode(false);
+    });
+
+    const qrZone = document.getElementById('qr-drop-zone');
+    const qrInput = document.getElementById('input-qr-file');
+    qrZone.addEventListener('click', () => qrInput.click());
+    qrInput.addEventListener('change', e => handleQrImport(e.target.files[0]));
+
+    document.getElementById('btn-random-pass').addEventListener('click', () => {
+        document.getElementById('input-password').value = generateRandomAccessCode();
+        renderPreview();
+    });
+    document.getElementById('btn-save-access').addEventListener('click', () => recordAccessInHistory(false));
+    document.getElementById('input-history-search').addEventListener('input', renderHistoryList);
+    document.getElementById('btn-clear-history').addEventListener('click', () => {
+        if (state.history.length && confirm('Vider l\'historique ?')) {
+            state.history = [];
+            saveHistoryToStorage();
+        }
+    });
+
+    document.getElementById('btn-export-pdf').addEventListener('click', exportHistoryToPDF);
+    document.getElementById('btn-restore-pdf-trigger').addEventListener('click', () => {
+        document.getElementById('input-restore-pdf').click();
+    });
+    document.getElementById('input-restore-pdf').addEventListener('change', e => {
+        restoreHistoryFromPDF(e.target.files[0]);
+        e.target.value = '';
+    });
+
+    document.getElementById('btn-generate-qr').addEventListener('click', () => generateQRCode(false));
+    
+    // NOUVEAUX BOUTONS D'EXPORT
+    document.getElementById('btn-export-std').addEventListener('click', () => exportCard(CONFIG.PREVIEW_WIDTH, CONFIG.PREVIEW_HEIGHT, 'Standard'));
+    document.getElementById('btn-export-hd').addEventListener('click', () => exportCard(CONFIG.EXPORT_HD_W, CONFIG.EXPORT_HD_H, 'HD'));
+    
+    document.getElementById('btn-copy').addEventListener('click', copyCardToClipboard);
+    document.getElementById('btn-reset').addEventListener('click', resetAll);
+    document.getElementById('btn-download-app').addEventListener('click', downloadSelfHTML);
+
+    await preloadAndEmbedFonts();
+
+    const initialTheme = THEMES.find(t => t.id === saved.themeId) || THEMES[0];
+    const themeBtn = document.querySelector(`.theme-btn[data-theme-id="${initialTheme.id}"]`);
+    await applyTheme(initialTheme, themeBtn, true);
+
+    if (saved.color && isValidHex(saved.color)) updateThemeColorUI(saved.color);
+    if (saved.qrColor && isValidHex(saved.qrColor)) updateQrColorUI(saved.qrColor, saved.qrDilution ?? 100);
+
+    await generateQRCode(true);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+</script>
+</body>
+</html>
